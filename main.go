@@ -31,7 +31,14 @@ func loadApiConfig(filename string) (apiConfidData, error) {
 	}
 	return c, nil
 }
+//middleware
+func enableCORS(w http.ResponseWriter,r *http.Request){
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+}
 func hello(w http.ResponseWriter, r *http.Request) {
+	enableCORS(w, r)
 	w.Write([]byte("hello from go!\n"))
 }
 func query(city string) (weatherData, error) {
@@ -60,6 +67,11 @@ func main() {
 
 	http.HandleFunc("/weather/",
 		func(w http.ResponseWriter, r *http.Request) {
+			enableCORS(w, r)
+				if r.Method == "OPTIONS" {
+				w.WriteHeader(http.StatusOK)
+				return
+			}
 			city := strings.SplitN(r.URL.Path, "/", 3)[2]
 			data, err := query(city)
 			if err != nil {
